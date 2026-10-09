@@ -16,7 +16,7 @@ class Matrix {
     set values(v) {
         var i, j, idx;
         // v is already a 2d array with dims equal to rows and columns
-        if (v instanceof Array && v.length === this.rows && 
+        if (v instanceof Array && v.length === this.rows &&
             v[0] instanceof Array && v[0].length === this.columns) {
             this.data = v;
         }
@@ -98,7 +98,7 @@ class Matrix {
         }
         return result;
     }
-    
+
     // transpose
     transpose() {
         let result = new Matrix(this.columns, this.rows);
@@ -110,7 +110,7 @@ class Matrix {
         }
         return result;
     }
-    
+
     // inverse
     inverse() {
         let result = null;
@@ -167,7 +167,7 @@ class Matrix {
         }
         return new Float32Array(flat);
     }
-    
+
     // helper function for inverse calculation
     getValuesIgnoringRowCol(row, col) {
         let i, j;

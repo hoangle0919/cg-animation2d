@@ -1,8 +1,9 @@
 import * as CG from './transforms.js';
+import { Matrix } from './matrix.js';
 
 class Renderer {
     // canvas:              object ({id: __, width: __, height: __})
-    // limit_fps_flag:      bool 
+    // limit_fps_flag:      bool
     // fps:                 int
     constructor(canvas, limit_fps_flag, fps) {
         this.canvas = document.getElementById(canvas.id);
@@ -29,9 +30,59 @@ class Renderer {
                 }
             ],
             slide1: [],
-            slide2: [],
-            slide3: []
+            slide2: [
+                {
+                    vertices: this.regularPolygon(240, 300, 95, 5),
+                    center: {x: 240, y: 300},
+                    color: [0, 128, 128, 255],
+                    rate: 0.45,
+                    sx_min: 0.45, sx_max: 1.35,
+                    sy_min: 0.45, sy_max: 1.35,
+                    transform: new Matrix(3, 3)
+                },
+                {
+                    vertices: this.regularPolygon(570, 300, 85, 6),
+                    center: {x: 570, y: 300},
+                    color: [190, 50, 140, 255],
+                    rate: 0.3,
+                    sx_min: 0.35, sx_max: 1.7,
+                    sy_min: 0.9,  sy_max: 1.15,
+                    transform: new Matrix(3, 3)
+                }
+            ],
+            slide3: this.kaleidoscope(10)
         };
+    }
+
+    regularPolygon(cx, cy, radius, sides) {
+        let vertices = [];
+        for (let i = 0; i < sides; i++) {
+            let angle = Math.PI / 2 + i * 2 * Math.PI / sides;
+            vertices.push(CG.Vector3(Math.round(cx + radius * Math.cos(angle)),
+                                     Math.round(cy + radius * Math.sin(angle)), 1));
+        }
+        return vertices;
+    }
+
+    kaleidoscope(petals) {
+        let colors = [[220, 70, 70, 255], [240, 150, 40, 255], [60, 170, 120, 255],
+                      [70, 120, 220, 255], [160, 80, 200, 255]];
+        let models = [];
+        for (let i = 0; i < petals; i++) {
+            models.push({
+                vertices: [
+                    CG.Vector3(0, 45, 1),
+                    CG.Vector3(38, 130, 1),
+                    CG.Vector3(0, 215, 1),
+                    CG.Vector3(-38, 130, 1)
+                ],
+                base_angle: i * 2 * Math.PI / petals,
+                phase: i * Math.PI / 4,
+                color: colors[i % colors.length],
+                transform: new Matrix(3, 3)
+            });
+        }
+        return models;
     }
 
     // flag:  bool
@@ -85,9 +136,49 @@ class Renderer {
 
     //
     updateTransforms(time, delta_time) {
-        // TODO: update any transformations needed for animation
+        if (this.slide_idx === 2) {
+            for (let i = 0; i < this.models.slide2.length; i++) {
+                let model = this.models.slide2[i];
+                let wave = (Math.sin(2 * Math.PI * model.rate * time / 1000) + 1) / 2;
+                let sx = model.sx_min + (model.sx_max - model.sx_min) * wave;
+                let sy = model.sy_min + (model.sy_max - model.sy_min) * wave;
+
+                let to_origin = new Matrix(3, 3);
+                let scale = new Matrix(3, 3);
+                let back = new Matrix(3, 3);
+                CG.mat3x3Translate(to_origin, -model.center.x, -model.center.y);
+                CG.mat3x3Scale(scale, sx, sy);
+                CG.mat3x3Translate(back, model.center.x, model.center.y);
+
+                model.transform = Matrix.multiply([back, scale, to_origin]);
+            }
+        }
+        else if (this.slide_idx === 3) {
+            let spin = 2 * Math.PI * 0.07 * time / 1000;
+            for (let i = 0; i < this.models.slide3.length; i++) {
+                let model = this.models.slide3[i];
+                let pulse = 1 + 0.3 * Math.sin(2 * Math.PI * 0.35 * time / 1000 + model.phase);
+
+                let move = new Matrix(3, 3);
+                let rotate = new Matrix(3, 3);
+                let scale = new Matrix(3, 3);
+                CG.mat3x3Translate(move, 400, 300);
+                CG.mat3x3Rotate(rotate, model.base_angle + spin);
+                CG.mat3x3Scale(scale, pulse, pulse);
+
+                model.transform = Matrix.multiply([move, rotate, scale]);
+            }
+        }
     }
-    
+
+    applyTransform(transform, vertices) {
+        let moved = [];
+        for (let i = 0; i < vertices.length; i++) {
+            moved.push(transform.mult(vertices[i]));
+        }
+        return moved;
+    }
+
     //
     drawSlide() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -111,8 +202,8 @@ class Renderer {
     //
     drawSlide0() {
         // TODO: draw bouncing ball (circle that changes direction whenever it hits an edge)
-        
-        
+
+
         // Following lines are example of drawing a single polygon
         // (this should be removed/edited after you implement the slide)
         let teal = [0, 128, 128, 255];
@@ -123,28 +214,26 @@ class Renderer {
     drawSlide1() {
         // TODO: draw at least 3 polygons that spin about their own centers
         //   - have each polygon spin at a different speed / direction
-        
-        
+
+
     }
 
     //
     drawSlide2() {
-        // TODO: draw at least 2 polygons grow and shrink about their own centers
-        //   - have each polygon grow / shrink different sizes
-        //   - try at least 1 polygon that grows / shrinks non-uniformly in the x and y directions
-
-
+        for (let i = 0; i < this.models.slide2.length; i++) {
+            let model = this.models.slide2[i];
+            this.drawConvexPolygon(this.applyTransform(model.transform, model.vertices), model.color);
+        }
     }
 
     //
     drawSlide3() {
-        // TODO: get creative!
-        //   - animation should involve all three basic transformation types
-        //     (translation, scaling, and rotation)
-        
-        
+        for (let i = 0; i < this.models.slide3.length; i++) {
+            let model = this.models.slide3[i];
+            this.drawConvexPolygon(this.applyTransform(model.transform, model.vertices), model.color);
+        }
     }
-    
+
     // vertex_list:  array of object [Matrix(3, 1), Matrix(3, 1), ..., Matrix(3, 1)]
     // color:        array of int [R, G, B, A]
     drawConvexPolygon(vertex_list, color) {

@@ -1,0 +1,56 @@
+# ---------------------------------------------------------------------------
+# CISC 420 — reference .gitignore
+# Copy this into each assignment repository as a starting point.
+# ---------------------------------------------------------------------------
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm/
+.node_repl_history
+*.tgz
+
+# Secrets — never commit these
+.env
+.env.*
+*.pem
+*.key
+id_rsa
+id_ed25519
+secrets.json
+
+# Build output
+dist/
+build/
+out/
+coverage/
+.nyc_output/
+
+# Editors
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*~
+
+# Logs and temp
+*.log
+tmp/
+temp/
+
+# Graphics scratch — large renders and captures don't belong in Git
+*.mp4
+*.mov
+renders/
+captures/
