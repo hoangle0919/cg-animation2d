@@ -38,7 +38,7 @@ let app = createApp({
                 this.renderer.setSlideIndex(this.slide_idx);
             }
         },
-
+        
         nextSlide() {
             if (this.slide_idx < this.slide_description.length - 1) {
                 this.slide_idx += 1;
@@ -47,7 +47,7 @@ let app = createApp({
         }
     }
 }).mount('#content');
-
+    
 app.renderer = new Renderer(app.view, app.limit_fps, app.fps);
 window.requestAnimationFrame((timestamp) => {
     app.renderer.animate(timestamp);
