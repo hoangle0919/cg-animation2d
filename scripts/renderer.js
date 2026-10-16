@@ -21,34 +21,34 @@ class Renderer {
                 {
                     vertices: this.regularPolygon(0, 0, 50, 500),
                     x: 0,
-                    y: 0,
+                    y: 800,
                     radius: 50,
                     velocity: {vx: 180, vy: 100},
                     radius: 50,
                     gravity: -800,
-                    e_coeff: 0.95,
+                    e_coeff: 0.85,
                     color: [255, 162, 162, 128],
                     transform: new Matrix(3, 3)
                 },
                 {
                     vertices: this.regularPolygon(0, 0, 70, 500),
                     x: 0,
-                    y: 0,
+                    y: 800,
                     radius: 70,
                     velocity: {vx: 110, vy: 90},
                     gravity: -800,
-                    e_coeff: 0.85,
+                    e_coeff: 0.95,
                     color: [43, 127, 255, 128],
                     transform: new Matrix(3, 3)
                 },
                 {
                     vertices: this.regularPolygon(0, 0, 90, 500),
                     x: 0,
-                    y: 0,
+                    y: 800,
                     radius: 90,
-                    velocity: {vx: 100, vy: 150},
+                    velocity: {vx: 180, vy: 150},
                     gravity: -800,
-                    e_coeff: 0.45,
+                    e_coeff: 0.5,
                     color: [49, 201, 80, 128],
                     transform: new Matrix(3, 3)
                 }
