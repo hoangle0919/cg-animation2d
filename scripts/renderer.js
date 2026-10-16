@@ -18,18 +18,61 @@ class Renderer {
 
         this.models = {
             slide0: [
-                // example model (diamond) -> should be replaced with actual model
                 {
-                    vertices: [
-                        CG.Vector3(400, 150, 1),
-                        CG.Vector3(500, 300, 1),
-                        CG.Vector3(400, 450, 1),
-                        CG.Vector3(300, 300, 1)
-                    ],
-                    transform: null
+                    vertices: this.regularPolygon(0, 0, 50, 500),
+                    radius: 50,
+                    velocity: {vx: 150, vy: 200},
+                    radius: 50,
+                    gravity: 800,
+                    e_coeff: 0.95,
+                    color: [255, 162, 162, 128],
+                    transform: new Matrix(3, 3)
+                },
+                {
+                    vertices: this.regularPolygon(0, 0, 70, 500),
+                    radius: 70,
+                    velocity: {vx: 100, vy: 90},
+                    gravity: 800,
+                    e_coeff: 0.70,
+                    color: [43, 127, 255, 128],
+                    transform: new Matrix(3, 3)
+                },
+                {
+                    vertices: this.regularPolygon(0, 0, 90, 500),
+                    radius: 70,
+                    velocity: {vx: 170, vy: 150},
+                    gravity: 800,
+                    e_coeff: 0.45,
+                    color: [49, 201, 80, 128],
+                    transform: new Matrix(3, 3)
                 }
             ],
-            slide1: [],
+            slide1: [
+                {
+                    vertices: this.regularPolygon(400, 300, 100, 7),
+                    center: {x: 400, y: 300},
+                    color: [255, 162, 162, 128],
+                    rate: 0.5,
+                    velocity: {vx: 0.1, vy: 0.1},
+                    transform: new Matrix(3, 3)
+                },
+                {
+                    vertices: this.regularPolygon(100, 200, 70, 5),
+                    center: {x: 100, y: 200},
+                    color: [43, 127, 255, 128],
+                    rate: 0.5,
+                    velocity: {vx: 0.1, vy: 0.1},
+                    transform: new Matrix(3, 3)
+                },
+                {
+                    vertices: this.regularPolygon(650, 500, 70, 3),
+                    center: {x: 650, y: 500},
+                    color: [49, 201, 80, 128],
+                    rate: 0.5,
+                    velocity: {vx: 0.1, vy: 0.1},
+                    transform: new Matrix(3, 3)
+                }
+            ],
             slide2: [
                 {
                     vertices: this.regularPolygon(240, 300, 95, 5),
@@ -65,8 +108,8 @@ class Renderer {
     }
 
     kaleidoscope(petals) {
-        let colors = [[220, 70, 70, 255], [240, 150, 40, 255], [60, 170, 120, 255],
-                      [70, 120, 220, 255], [160, 80, 200, 255]];
+        let colors = [[118, 36, 148, 255], [68, 80, 179, 255], [96, 223, 108, 255],
+                      [221, 117, 28, 255], [219, 72, 173, 255]];
         let models = [];
         for (let i = 0; i < petals; i++) {
             models.push({
@@ -136,7 +179,64 @@ class Renderer {
 
     //
     updateTransforms(time, delta_time) {
-        if (this.slide_idx === 2) {
+        if (this.slide_idx === 0){
+            let dt = delta_time/1000;
+
+            for (let i = 0; i < this.models.slide0.length; i++) {
+                let model = this.models.slide0[i];
+                            
+                let x_min = this.models.radius;
+                let x_max = this.canvas.width - this.models.radius;
+                let y_min = this.models.radius;
+                let y_max = this.canvas.height - this.models.radius;
+
+                model.velocity.vy += model.gravity * dt;
+                model.x += model.velocity.vx * dt;
+                model.y += model.velocity.vy * dt;
+                
+                // Bottom
+                if (model.y >= y_max) {
+                    model.y = y_max;
+                    model.velocity.vy = -model.velocity.vy * model.e_coeff;
+                }
+                // Top
+                if (model.y <= y_min) {
+                    model.y = y_min;
+                    model.velocity.vy = -model.velocity.vy * model.e_coeff;
+                }
+                // Right  
+                if (model.x >= x_max) {
+                    model.x = x_max;
+                    model.velocity.vx = -model.velocity.vx * model.e_coeff;
+                }
+                // Left 
+                if (model.x <= x_min) {
+                    model.x = x_min;
+                    model.velocity.vx = -model.velocity.vx * model.e_coeff;
+                }
+
+                let move = new Matrix(3, 3);
+                CG.mat3x3Translate(move, model.x, model.y);
+                model.transform = move;
+            }
+        }
+        else if (this.slide_idx === 1) {
+            let spin = 2 * Math.PI * 0.07 * time / 1000;
+            for (let i = 0; i < this.models.slide1.length; i++) {
+                let model = this.models.slide1[i];
+
+                let to_origin = new Matrix(3, 3);
+                let rotate = new Matrix(3, 3);
+                let back = new Matrix(3, 3);
+
+                CG.mat3x3Translate(to_origin, -model.center.x, -model.center.y);
+                CG.mat3x3Rotate(rotate, spin * (i + 1)); // Different speed per polygon
+                CG.mat3x3Translate(back, model.center.x, model.center.y);
+
+                model.transform = Matrix.multiply([back, rotate, to_origin]);
+            }
+        }
+        else if (this.slide_idx === 2) {
             for (let i = 0; i < this.models.slide2.length; i++) {
                 let model = this.models.slide2[i];
                 let wave = (Math.sin(2 * Math.PI * model.rate * time / 1000) + 1) / 2;
@@ -206,15 +306,20 @@ class Renderer {
 
         // Following lines are example of drawing a single polygon
         // (this should be removed/edited after you implement the slide)
-        let teal = [0, 128, 128, 255];
-        this.drawConvexPolygon(this.models.slide0[0].vertices, teal);
+        for (let i = 0; i < this.models.slide0.length; i++) {
+            let model = this.models.slide0[i];
+            this.drawConvexPolygon(this.applyTransform(model.transform, model.vertices), model.color);
+        }
     }
 
     //
     drawSlide1() {
         // TODO: draw at least 3 polygons that spin about their own centers
         //   - have each polygon spin at a different speed / direction
-
+        for (let i = 0; i < this.models.slide1.length; i++) {
+            let model = this.models.slide1[i];
+            this.drawConvexPolygon(this.applyTransform(model.transform, model.vertices), model.color);
+        }
 
     }
 
