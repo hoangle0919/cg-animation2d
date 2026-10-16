@@ -20,28 +20,34 @@ class Renderer {
             slide0: [
                 {
                     vertices: this.regularPolygon(0, 0, 50, 500),
+                    x: 0,
+                    y: 0,
                     radius: 50,
-                    velocity: {vx: 150, vy: 200},
+                    velocity: {vx: 180, vy: 100},
                     radius: 50,
-                    gravity: 800,
+                    gravity: -800,
                     e_coeff: 0.95,
                     color: [255, 162, 162, 128],
                     transform: new Matrix(3, 3)
                 },
                 {
                     vertices: this.regularPolygon(0, 0, 70, 500),
+                    x: 0,
+                    y: 0,
                     radius: 70,
-                    velocity: {vx: 100, vy: 90},
-                    gravity: 800,
-                    e_coeff: 0.70,
+                    velocity: {vx: 110, vy: 90},
+                    gravity: -800,
+                    e_coeff: 0.85,
                     color: [43, 127, 255, 128],
                     transform: new Matrix(3, 3)
                 },
                 {
                     vertices: this.regularPolygon(0, 0, 90, 500),
-                    radius: 70,
-                    velocity: {vx: 170, vy: 150},
-                    gravity: 800,
+                    x: 0,
+                    y: 0,
+                    radius: 90,
+                    velocity: {vx: 100, vy: 150},
+                    gravity: -800,
                     e_coeff: 0.45,
                     color: [49, 201, 80, 128],
                     transform: new Matrix(3, 3)
@@ -185,10 +191,10 @@ class Renderer {
             for (let i = 0; i < this.models.slide0.length; i++) {
                 let model = this.models.slide0[i];
                             
-                let x_min = this.models.radius;
-                let x_max = this.canvas.width - this.models.radius;
-                let y_min = this.models.radius;
-                let y_max = this.canvas.height - this.models.radius;
+                let x_min = model.radius;
+                let x_max = this.canvas.width - model.radius;
+                let y_min = model.radius;
+                let y_max = this.canvas.height - model.radius;
 
                 model.velocity.vy += model.gravity * dt;
                 model.x += model.velocity.vx * dt;
